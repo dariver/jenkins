@@ -175,7 +175,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
      * from here.
      *
      * <p>
-     * See http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6459208 for how to force a class initialization.
+     * See https://bugs.openjdk.java.net/browse/JDK-4993813 for how to force a class initialization.
      * Also see http://kohsuke.org/2010/09/01/deadlock-that-you-cant-avoid/ for how class initialization
      * can results in a dead lock.
      */
@@ -282,7 +282,6 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                 LOGGER.log(Level.SEVERE, "Failed to create Guice container from all the plugins",e);
                 // failing to load all bindings are disastrous, so recover by creating minimum that works
                 // by just including the core
-                // TODO this recovery is pretty much useless; startup crashes anyway
                 container = Guice.createInjector(new SezpozModule(loadSezpozIndices(Jenkins.class.getClassLoader())));
             }
 
@@ -479,7 +478,11 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                     m.invoke(ecl, c);
                     c.getConstructors();
                     c.getMethods();
-                    c.getFields();
+                    for (Field f : c.getFields()) {
+                        if (f.getAnnotation(javax.inject.Inject.class) != null || f.getAnnotation(com.google.inject.Inject.class) != null) {
+                            resolve(f.getType());
+                        }
+                    }
                     LOGGER.log(Level.FINER, "{0} looks OK", c);
                     while (c != Object.class) {
                         c.getGenericSuperclass();
@@ -668,8 +671,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                         extType = ((Method)e).getReturnType();
                     } else
                         throw new AssertionError();
-                    // according to http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6459208
-                    // this appears to be the only way to force a class initialization
+                    // according to JDK-4993813 this is the only way to force class initialization
                     Class.forName(extType.getName(),true,extType.getClassLoader());
                 } catch (Exception | LinkageError e) {
                     LOGGER.log(logLevel(item), "Failed to scout "+item.className(), e);

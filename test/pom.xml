@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.648-SNAPSHOT</version>
+    <version>1.657-SNAPSHOT</version>
   </parent>
 
   <artifactId>test</artifactId>
@@ -39,7 +39,6 @@ THE SOFTWARE.
   <properties>
     <concurrency>2</concurrency> <!-- may use e.g. 2C for 2 × (number of cores) -->
     <mavenDebug>false</mavenDebug>
-    <ignore.random.failures>false</ignore.random.failures>
     <jacocoSurefireArgs /><!-- empty by default -->
   </properties>
 
@@ -63,8 +62,14 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2.0</version>
+      <version>2.5</version>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>${project.groupId}</groupId>
+          <artifactId>jenkins-war</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
@@ -202,7 +207,6 @@ THE SOFTWARE.
               <hudson.ClassicPluginStrategy.useAntClassLoader>true</hudson.ClassicPluginStrategy.useAntClassLoader>
               <hudson.maven.debug>${mavenDebug}</hudson.maven.debug>
               <buildDirectory>${project.build.directory}</buildDirectory>
-              <ignore.random.failures>${ignore.random.failures}</ignore.random.failures>
           </systemPropertyVariables>
           <reuseForks>true</reuseForks>
           <forkCount>${concurrency}</forkCount>
@@ -263,6 +267,7 @@ THE SOFTWARE.
       </activation>
       <properties>
         <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
+        <surefire.rerunFailingTestsCount>4</surefire.rerunFailingTestsCount>
       </properties>
     </profile>
     <profile>
