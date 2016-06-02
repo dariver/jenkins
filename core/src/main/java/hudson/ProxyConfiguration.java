@@ -50,11 +50,13 @@ import java.util.regex.Pattern;
 import javax.annotation.CheckForNull;
 import jenkins.model.Jenkins;
 import jenkins.util.JenkinsJVM;
+import jenkins.util.SystemProperties;
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.jenkinsci.Symbol;
 import org.jvnet.robust_http_client.RetryableHttpStream;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -78,7 +80,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
      * Holds a default TCP connect timeout set on all connections returned from this class,
      * note this is value is in milliseconds, it's passed directly to {@link URLConnection#setConnectTimeout(int)}
      */
-    private static final int DEFAULT_CONNECT_TIMEOUT_MILLIS = Integer.getInteger("hudson.ProxyConfiguration.DEFAULT_CONNECT_TIMEOUT_MILLIS", 20 * 1000);
+    private static final int DEFAULT_CONNECT_TIMEOUT_MILLIS = SystemProperties.getInteger("hudson.ProxyConfiguration.DEFAULT_CONNECT_TIMEOUT_MILLIS", 20 * 1000);
     
     public final String name;
     public final int port;
@@ -306,7 +308,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         XSTREAM.alias("proxy", ProxyConfiguration.class);
     }
 
-    @Extension
+    @Extension @Symbol("proxy")
     public static class DescriptorImpl extends Descriptor<ProxyConfiguration> {
         @Override
         public String getDisplayName() {
